@@ -1,0 +1,17 @@
+.post {
+  display: none;
+  &.active {
+    display: block;
+  }
+}
+
+.post-author {
+  font-style: italic;
+}
+
+.post-tags {
+  display: flex;
+  p {
+    margin: 0 10px 0 0;
+  }
+}

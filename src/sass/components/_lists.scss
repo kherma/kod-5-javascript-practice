@@ -1,0 +1,14 @@
+.list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  .active {
+    font-weight: bold;
+  }
+}
+
+.list-horizontal {
+  li {
+    display: inline-block;
+  }
+}

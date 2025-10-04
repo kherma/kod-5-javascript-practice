@@ -1,0 +1,9 @@
+@use '../abstracts' as a;
+
+.logo {
+  font-family: a.$font-logo;
+  font-weight: 400;
+  font-size: 104px;
+  line-height: 1;
+  text-align: center;
+}

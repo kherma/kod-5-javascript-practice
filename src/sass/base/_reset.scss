@@ -1,1 +1,18 @@
 // Reset
+
+@use '../abstracts/' as a;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  background: a.$color-light;
+  font-family: a.$font-text;
+  color: a.$color-dark;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.7;
+}
