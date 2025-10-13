@@ -54,6 +54,7 @@ function generateTitleLinks() {
     const newA = document.createElement('a');
     const newSpan = document.createElement('span');
 
+    article.classList.contains('active') && newA.classList.add('active');
     newA.href = `#${articleId}`;
     newSpan.innerText = articleTitle;
 
