@@ -5,7 +5,6 @@ const removeActiveClass = (query) => {
     activeLink.classList.remove('active');
   }
 };
-
 const titleClickHandler = function (event) {
   event.preventDefault();
   const clickedElement = this;
