@@ -1,5 +1,4 @@
 'use strict';
-
 const removeActiveClass = (query) => {
   const activeLinks = document.querySelectorAll(query);
   for (let activeLink of activeLinks) {
@@ -35,7 +34,7 @@ const optArticleSelector = '.post',
   optTitleListSelector = '.titles';
 
 function generateTitleLinks() {
-  const titleList = document.querySelector('ul.list.titles');
+  const titleList = document.querySelector(optTitleListSelector);
 
   /* remove contents of titleList */
   titleList.innerHTML = '';
@@ -54,6 +53,7 @@ function generateTitleLinks() {
     const newA = document.createElement('a');
     const newSpan = document.createElement('span');
 
+    article.classList.contains('active') && newA.classList.add('active');
     newA.href = `#${articleId}`;
     newSpan.innerText = articleTitle;
 
