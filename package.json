@@ -30,13 +30,13 @@
     "watch:assets": "onchange 'src/assets/**/*' -- npm run build:copy:assets",
     "watch": "npm-run-all --parallel watch:*",
     "serve": "browser-sync start --server public --files public",
-    "dev": "npm-run-all build --parallel watch serve",
+    "dev": "npm-run-all build --parallel watch serve test",
     "test:html": "html-validate 'src/**/*.html'",
-    "format:check": "prettier --check 'src/**/*.{js,scss}'",
-    "format:fix": "prettier --write 'src/**/*.{js,scss}'",
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
-    "test": "npm-run-all --parallel test:html format:check lint"
+    "test:format": "prettier --check 'src/**/*.{js,scss}'",
+    "test:js": "eslint src/js/",
+    "fix:format": "prettier --write 'src/**/*.{js,scss}'",
+    "fix:lint": "eslint --fix",
+    "test": "npm-run-all --parallel test:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
