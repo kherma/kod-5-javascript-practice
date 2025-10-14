@@ -34,9 +34,12 @@
     "test:html": "html-validate 'src/**/*.html'",
     "test:format": "prettier --check 'src/**/*.{js,scss}'",
     "test:js": "eslint src/js/",
+    "test:scss": "stylelint **/*.scss",
+    "test": "npm-run-all --parallel test:*",
     "fix:format": "prettier --write 'src/**/*.{js,scss}'",
     "fix:lint": "eslint --fix",
-    "test": "npm-run-all --parallel test:*"
+    "fix:stylelint": "stylelint **/*.scss --fix",
+    "fix": "npm-run-all fix:*"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
@@ -52,6 +55,9 @@
     "onchange": "^7.1.0",
     "postcss-cli": "^9.1.0",
     "prettier": "^3.0.0",
-    "sass": "^1.70.0"
+    "sass": "^1.70.0",
+    "stylelint": "^16.25.0",
+    "stylelint-config-standard": "^39.0.1",
+    "stylelint-config-standard-scss": "^16.0.0"
   }
 }
