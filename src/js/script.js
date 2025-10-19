@@ -10,7 +10,10 @@ const optArticleSelector = '.post',
   optTitleSelector = '.post-title',
   optTitleListSelector = '.titles',
   optArticleTagsSelector = '.post-tags',
-  optArticleAuthorSelector = '.post-author';
+  optArticleAuthorSelector = '.post-author',
+  optTagsListSelector = '.tags.list',
+  optCloudClassCount = 5,
+  optCloudClassPrefix = 'tag-size-';
 
 const titleClickHandler = function (event) {
   event.preventDefault();
@@ -77,9 +80,61 @@ function generateTitleLinks(customSelector = '') {
 
 generateTitleLinks();
 
+const generatePercentageMap = () => {
+  const max = 100;
+  const step = max / optCloudClassCount;
+  const percentageMap = [];
+  Array.from(Array(optCloudClassCount).keys()).forEach((num) => {
+    percentageMap.push({
+      min: Math.round(num * step + 1),
+      max: Math.round((num + 1) * step),
+    });
+  });
+  return percentageMap;
+};
+
+const calculateTagsParams = (tags) => {
+  const tagsCounter = [];
+  const params = {};
+  for (let tag in tags) {
+    tagsCounter.push(tags[tag]);
+  }
+  params.min = Math.min(...tagsCounter);
+  params.max = Math.max(...tagsCounter);
+  return params;
+};
+
+const calculateTagClass = (tagCount, tagsParams) => {
+  const percentageMap = generatePercentageMap();
+
+  const tagCountToPercentage = Math.round((tagCount * 100) / tagsParams.max);
+  const tagPercentageToClassValue =
+    percentageMap.findIndex(
+      (element) =>
+        element.min <= tagCountToPercentage &&
+        element.max >= tagCountToPercentage
+    ) + 1;
+  return tagPercentageToClassValue;
+};
+
+const createTagListElement = (tag, tagCounterClass) => {
+  const newA = document.createElement('a');
+  const newLi = document.createElement('li');
+  newA.innerText = tag;
+  newA.href = `#tag-${tag}`;
+  newLi.appendChild(newA);
+  tagCounterClass &&
+    newA.classList.add(`${optCloudClassPrefix}${tagCounterClass}`);
+
+  return newLi;
+};
+
 function generateTags() {
+  const allTags = {};
+
   /* find all articles */
   const articles = document.querySelectorAll(optArticleSelector);
+  const tagsList = document.querySelector(optTagsListSelector);
 
   /* START LOOP: for every article: */
   for (let article of articles) {
@@ -94,16 +149,23 @@ function generateTags() {
     /* START LOOP: for each tag */
     articleTags.forEach((tag) => {
       /* generate HTML of the link */
-      const newA = document.createElement('a');
-      const newLi = document.createElement('li');
-      newA.innerText = tag;
-      newA.href = `#tag-${tag}`;
-      newLi.appendChild(newA);
-      articleTagsWrapper.appendChild(newLi);
+      articleTagsWrapper.appendChild(createTagListElement(tag));
+      !allTags[tag] ? (allTags[tag] = 1) : allTags[tag]++;
       /* END LOOP: for each tag */
     });
     /* END LOOP: for every article: */
   }
+
+  const tagsParams = calculateTagsParams(allTags);
+
+  Object.entries(allTags).forEach((keyValue) =>
+    tagsList.appendChild(
+      createTagListElement(
+        keyValue[0],
+        calculateTagClass(keyValue[1], tagsParams)
+      )
+    )
+  );
 }
 
 generateTags();
