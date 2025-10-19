@@ -6,6 +6,12 @@ const removeActiveClass = (query) => {
   }
 };
 
+const optArticleSelector = '.post',
+  optTitleSelector = '.post-title',
+  optTitleListSelector = '.titles',
+  optArticleTagsSelector = '.post-tags',
+  optArticleAuthorSelector = '.post-author';
+
 const titleClickHandler = function (event) {
   event.preventDefault();
   const clickedElement = this;
@@ -28,11 +34,6 @@ const titleClickHandler = function (event) {
   /* add class 'active' to the correct article */
   targetArticle.classList.add('active');
 };
-
-const optArticleSelector = '.post',
-  optTitleSelector = '.post-title',
-  optTitleListSelector = '.titles',
-  optArticleTagsSelector = '.post-tags';
 
 function generateTitleLinks(customSelector = '') {
   const titleList = document.querySelector(optTitleListSelector);
@@ -155,3 +156,53 @@ function addClickListenersToTags() {
 }
 
 addClickListenersToTags();
+
+function generateAuthors() {
+  const articles = document.querySelectorAll(optArticleSelector);
+  for (let article of articles) {
+    const postAuthorWrapper = article.querySelector(optArticleAuthorSelector);
+    const postAuthor = article.dataset.author;
+    const newA = document.createElement('a');
+    newA.innerText = postAuthor;
+    newA.href = `#author-${postAuthor.toLowerCase().replace(' ', '-')}`;
+    postAuthorWrapper.appendChild(newA);
+  }
+}
+
+generateAuthors();
+
+function authorClickHandler(event) {
+  event.preventDefault();
+  const clickedElement = this;
+  const href = clickedElement.getAttribute('href');
+  const author = href.replace('#author-', '');
+
+  const allActiveAuthorLinks = document.querySelectorAll(
+    'a.active[href^="#author-"'
+  );
+
+  for (let activeAuthorLink of allActiveAuthorLinks) {
+    activeAuthorLink.classList.remove('active');
+  }
+
+  const allAuthorLinks = document.querySelectorAll('a[href="' + href + '"]');
+  for (let authorLink of allAuthorLinks) {
+    authorLink.classList.add('active');
+  }
+
+  const authorDataSet = author
+    .split('-')
+    .map((word) => word[0].toUpperCase() + word.substring(1))
+    .join(' ');
+
+  generateTitleLinks('[data-author="' + authorDataSet + '"]');
+}
+
+function addClickListenerToAuthors() {
+  const allAuthorsLinks = document.querySelectorAll('a[href^="#author-"]');
+  for (let authorLink of allAuthorsLinks) {
+    authorLink.addEventListener('click', authorClickHandler);
+  }
+}
+
+addClickListenerToAuthors();
