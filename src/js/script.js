@@ -6,15 +6,32 @@ const removeActiveClass = (query) => {
   }
 };
 
-const optArticleSelector = '.post',
-  optTitleSelector = '.post-title',
-  optTitleListSelector = '.titles',
-  optArticleTagsSelector = '.post-tags',
-  optArticleAuthorSelector = '.post-author',
-  optTagsListSelector = '.tags.list',
-  optCloudClassCount = 5,
-  optCloudClassPrefix = 'tag-size-',
-  optAuthorsListSelector = '.list.authors';
+const opts = {
+  tagSizes: {
+    count: 5,
+    classPrefix: 'tag-size-',
+  },
+};
+
+const select = {
+  all: {
+    articles: '.post',
+    linksTo: {
+      tags: 'a[href^="#tag-"]',
+      authors: 'a[href^="#author-"]',
+    },
+  },
+  article: {
+    title: '.post-title',
+    tags: '.post-tags .list',
+    author: '.post-author',
+  },
+  listOf: {
+    titles: '.titles',
+    tags: '.tags.list',
+    authors: '.authors.list',
+  },
+};
 
 const titleClickHandler = function (event) {
   event.preventDefault();
@@ -40,21 +57,21 @@ const titleClickHandler = function (event) {
 };
 
 function generateTitleLinks(customSelector = '') {
-  const titleList = document.querySelector(optTitleListSelector);
+  const titleList = document.querySelector(select.listOf.titles);
 
   /* remove contents of titleList */
   titleList.innerHTML = '';
 
   /* for each article */
   const articles = document.querySelectorAll(
-    optArticleSelector + customSelector
+    select.all.articles + customSelector
   );
   for (let article of articles) {
     /* get the article id */
     const articleId = article.getAttribute('id');
 
     /* find the title element and get the title from the title element */
-    const articleTitle = article.querySelector(optTitleSelector).innerHTML;
+    const articleTitle = article.querySelector(select.article.title).innerHTML;
 
     /* create HTML of the link */
     const newLi = document.createElement('li');
@@ -83,9 +100,9 @@ generateTitleLinks();
 
 const generatePercentageMap = () => {
   const max = 100;
-  const step = max / optCloudClassCount;
+  const step = max / opts.tagSizes.count;
   const percentageMap = [];
-  Array.from(Array(optCloudClassCount).keys()).forEach((num) => {
+  Array.from(Array(opts.tagSizes.count).keys()).forEach((num) => {
     percentageMap.push({
       min: Math.round(num * step + 1),
       max: Math.round((num + 1) * step),
@@ -125,7 +142,7 @@ const createTagListElement = (tag, tagCounterClass) => {
   newA.href = `#tag-${tag}`;
   newLi.appendChild(newA);
   tagCounterClass &&
-    newA.classList.add(`${optCloudClassPrefix}${tagCounterClass}`);
+    newA.classList.add(`${opts.tagSizes.classPrefix}${tagCounterClass}`);
 
   return newLi;
 };
@@ -134,15 +151,13 @@ function generateTags() {
   const allTags = {};
 
   /* find all articles */
-  const articles = document.querySelectorAll(optArticleSelector);
-  const tagsList = document.querySelector(optTagsListSelector);
+  const articles = document.querySelectorAll(select.all.articles);
+  const tagsList = document.querySelector(select.listOf.tags);
 
   /* START LOOP: for every article: */
   for (let article of articles) {
     /* find tags wrapper */
-    const articleTagsWrapper = article.querySelector(
-      `${optArticleTagsSelector} ul`
-    );
+    const articleTagsWrapper = article.querySelector(select.article.tags);
 
     /* get tags from data-tags attribute */
     const articleTags = article.dataset.tags.split(' ');
@@ -241,11 +256,11 @@ const createAuthorElement = (author, authorArticleCount) => {
 
 function generateAuthors() {
   const allAuthors = {};
-  const AuthorsList = document.querySelector(optAuthorsListSelector);
+  const AuthorsList = document.querySelector(select.listOf.authors);
 
-  const articles = document.querySelectorAll(optArticleSelector);
+  const articles = document.querySelectorAll(select.all.articles);
   for (let article of articles) {
-    const postAuthorWrapper = article.querySelector(optArticleAuthorSelector);
+    const postAuthorWrapper = article.querySelector(select.article.author);
     const postAuthor = article.dataset.author;
     !allAuthors[postAuthor]
       ? (allAuthors[postAuthor] = 1)
