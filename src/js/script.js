@@ -13,7 +13,8 @@ const optArticleSelector = '.post',
   optArticleAuthorSelector = '.post-author',
   optTagsListSelector = '.tags.list',
   optCloudClassCount = 5,
-  optCloudClassPrefix = 'tag-size-';
+  optCloudClassPrefix = 'tag-size-',
+  optAuthorsListSelector = '.list.authors';
 
 const titleClickHandler = function (event) {
   event.preventDefault();
@@ -219,16 +220,45 @@ function addClickListenersToTags() {
 
 addClickListenersToTags();
 
+const createAuthorElement = (author, authorArticleCount) => {
+  const newA = document.createElement('a');
+  newA.innerText = author;
+  newA.href = `#author-${author.toLowerCase().replace(' ', '-')}`;
+
+  if (authorArticleCount) {
+    const newSpan = document.createElement('span');
+    newSpan.classList.add('author-name');
+    newSpan.innerText = `(${authorArticleCount})`;
+
+    const newLi = document.createElement('li');
+    newLi.appendChild(newA);
+    newLi.appendChild(newSpan);
+    return newLi;
+  }
+
+  return newA;
+};
+
 function generateAuthors() {
+  const allAuthors = {};
+  const AuthorsList = document.querySelector(optAuthorsListSelector);
+
   const articles = document.querySelectorAll(optArticleSelector);
   for (let article of articles) {
     const postAuthorWrapper = article.querySelector(optArticleAuthorSelector);
     const postAuthor = article.dataset.author;
+    !allAuthors[postAuthor]
+      ? (allAuthors[postAuthor] = 1)
+      : allAuthors[postAuthor]++;
     const newA = document.createElement('a');
     newA.innerText = postAuthor;
     newA.href = `#author-${postAuthor.toLowerCase().replace(' ', '-')}`;
-    postAuthorWrapper.appendChild(newA);
+    postAuthorWrapper.appendChild(createAuthorElement(postAuthor));
   }
+
+  Object.entries(allAuthors).forEach((keyValue) => {
+    AuthorsList.appendChild(createAuthorElement(keyValue[0], keyValue[1]));
+  });
 }
 
 generateAuthors();

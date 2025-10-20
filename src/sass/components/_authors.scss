@@ -1,5 +1,9 @@
 .authors {
   li {
     margin-bottom: 12px;
+
+    & span {
+      margin-left: 5px;
+    }
   }
 }
