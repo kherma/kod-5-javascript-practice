@@ -11,6 +11,7 @@
 .list-horizontal {
   li {
     display: inline-block;
+
     &:not(:first-child) {
       margin-left: 5px;
     }

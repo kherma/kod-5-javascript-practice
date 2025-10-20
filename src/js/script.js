@@ -6,11 +6,32 @@ const removeActiveClass = (query) => {
   }
 };
 
-const optArticleSelector = '.post',
-  optTitleSelector = '.post-title',
-  optTitleListSelector = '.titles',
-  optArticleTagsSelector = '.post-tags',
-  optArticleAuthorSelector = '.post-author';
+const opts = {
+  tagSizes: {
+    count: 5,
+    classPrefix: 'tag-size-',
+  },
+};
+
+const select = {
+  all: {
+    articles: '.post',
+    linksTo: {
+      tags: 'a[href^="#tag-"]',
+      authors: 'a[href^="#author-"]',
+    },
+  },
+  article: {
+    title: '.post-title',
+    tags: '.post-tags .list',
+    author: '.post-author',
+  },
+  listOf: {
+    titles: '.titles',
+    tags: '.tags.list',
+    authors: '.authors.list',
+  },
+};
 
 const titleClickHandler = function (event) {
   event.preventDefault();
@@ -36,21 +57,21 @@ const titleClickHandler = function (event) {
 };
 
 function generateTitleLinks(customSelector = '') {
-  const titleList = document.querySelector(optTitleListSelector);
+  const titleList = document.querySelector(select.listOf.titles);
 
   /* remove contents of titleList */
   titleList.innerHTML = '';
 
   /* for each article */
   const articles = document.querySelectorAll(
-    optArticleSelector + customSelector
+    select.all.articles + customSelector
   );
   for (let article of articles) {
     /* get the article id */
     const articleId = article.getAttribute('id');
 
     /* find the title element and get the title from the title element */
-    const articleTitle = article.querySelector(optTitleSelector).innerHTML;
+    const articleTitle = article.querySelector(select.article.title).innerHTML;
 
     /* create HTML of the link */
     const newLi = document.createElement('li');
@@ -77,16 +98,66 @@ function generateTitleLinks(customSelector = '') {
 
 generateTitleLinks();
 
+const generatePercentageMap = () => {
+  const max = 100;
+  const step = max / opts.tagSizes.count;
+  const percentageMap = [];
+  Array.from(Array(opts.tagSizes.count).keys()).forEach((num) => {
+    percentageMap.push({
+      min: Math.round(num * step + 1),
+      max: Math.round((num + 1) * step),
+    });
+  });
+  return percentageMap;
+};
+
+const calculateTagsParams = (tags) => {
+  const tagsCounter = [];
+  const params = {};
+  for (let tag in tags) {
+    tagsCounter.push(tags[tag]);
+  }
+  params.min = Math.min(...tagsCounter);
+  params.max = Math.max(...tagsCounter);
+  return params;
+};
+
+const calculateTagClass = (tagCount, tagsParams) => {
+  const percentageMap = generatePercentageMap();
+
+  const tagCountToPercentage = Math.round((tagCount * 100) / tagsParams.max);
+  const tagPercentageToClassValue =
+    percentageMap.findIndex(
+      (element) =>
+        element.min <= tagCountToPercentage &&
+        element.max >= tagCountToPercentage
+    ) + 1;
+  return tagPercentageToClassValue;
+};
+
+const createTagListElement = (tag, tagCounterClass) => {
+  const newA = document.createElement('a');
+  const newLi = document.createElement('li');
+  newA.innerText = tag;
+  newA.href = `#tag-${tag}`;
+  newLi.appendChild(newA);
+  tagCounterClass &&
+    newA.classList.add(`${opts.tagSizes.classPrefix}${tagCounterClass}`);
+
+  return newLi;
+};
+
 function generateTags() {
+  const allTags = {};
+
   /* find all articles */
-  const articles = document.querySelectorAll(optArticleSelector);
+  const articles = document.querySelectorAll(select.all.articles);
+  const tagsList = document.querySelector(select.listOf.tags);
 
   /* START LOOP: for every article: */
   for (let article of articles) {
     /* find tags wrapper */
-    const articleTagsWrapper = article.querySelector(
-      `${optArticleTagsSelector} ul`
-    );
+    const articleTagsWrapper = article.querySelector(select.article.tags);
 
     /* get tags from data-tags attribute */
     const articleTags = article.dataset.tags.split(' ');
@@ -94,16 +165,23 @@ function generateTags() {
     /* START LOOP: for each tag */
     articleTags.forEach((tag) => {
       /* generate HTML of the link */
-      const newA = document.createElement('a');
-      const newLi = document.createElement('li');
-      newA.innerText = tag;
-      newA.href = `#tag-${tag}`;
-      newLi.appendChild(newA);
-      articleTagsWrapper.appendChild(newLi);
+      articleTagsWrapper.appendChild(createTagListElement(tag));
+      !allTags[tag] ? (allTags[tag] = 1) : allTags[tag]++;
       /* END LOOP: for each tag */
     });
     /* END LOOP: for every article: */
   }
+
+  const tagsParams = calculateTagsParams(allTags);
+
+  Object.entries(allTags).forEach((keyValue) =>
+    tagsList.appendChild(
+      createTagListElement(
+        keyValue[0],
+        calculateTagClass(keyValue[1], tagsParams)
+      )
+    )
+  );
 }
 
 generateTags();
@@ -157,16 +235,45 @@ function addClickListenersToTags() {
 
 addClickListenersToTags();
 
+const createAuthorElement = (author, authorArticleCount) => {
+  const newA = document.createElement('a');
+  newA.innerText = author;
+  newA.href = `#author-${author.toLowerCase().replace(' ', '-')}`;
+
+  if (authorArticleCount) {
+    const newSpan = document.createElement('span');
+    newSpan.classList.add('author-name');
+    newSpan.innerText = `(${authorArticleCount})`;
+
+    const newLi = document.createElement('li');
+    newLi.appendChild(newA);
+    newLi.appendChild(newSpan);
+    return newLi;
+  }
+
+  return newA;
+};
+
 function generateAuthors() {
-  const articles = document.querySelectorAll(optArticleSelector);
+  const allAuthors = {};
+  const AuthorsList = document.querySelector(select.listOf.authors);
+
+  const articles = document.querySelectorAll(select.all.articles);
   for (let article of articles) {
-    const postAuthorWrapper = article.querySelector(optArticleAuthorSelector);
+    const postAuthorWrapper = article.querySelector(select.article.author);
     const postAuthor = article.dataset.author;
+    !allAuthors[postAuthor]
+      ? (allAuthors[postAuthor] = 1)
+      : allAuthors[postAuthor]++;
     const newA = document.createElement('a');
     newA.innerText = postAuthor;
     newA.href = `#author-${postAuthor.toLowerCase().replace(' ', '-')}`;
-    postAuthorWrapper.appendChild(newA);
+    postAuthorWrapper.appendChild(createAuthorElement(postAuthor));
   }
+
+  Object.entries(allAuthors).forEach((keyValue) => {
+    AuthorsList.appendChild(createAuthorElement(keyValue[0], keyValue[1]));
+  });
 }
 
 generateAuthors();
