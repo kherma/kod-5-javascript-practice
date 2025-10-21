@@ -142,7 +142,6 @@
               <p>Donec eleifend mauris ac nisl fermentum, ac fermentum turpis dignissim. Aliquam diam nisl, imperdiet a
                 varius eget, lobortis sed nisi. Nullam suscipit ipsum sed magna blandit, sed pellentesque urna
                 malesuada.</p>
-
               <p>Duis vestibulum arcu et lectus viverra porta. Praesent tempor lacus eget quam mattis, sit amet
                 venenatis diam ultrices. Morbi gravida sapien quis ligula tincidunt, vel sagittis erat ultrices.</p>
 
@@ -226,6 +225,29 @@
       </main>
     </div>
   </div>
+  <script id="template-article-link" type="text/x-handlebars-template">
+    <li><a class="{{className}}" href="#{{ id }}"><span>{{ title }}</span></a></li>
+  </script>
+  <script id="template-tag-link" type="text/x-handlebars-template">
+    <li><a href="#{{ id }}">{{ title }}</a></li>
+  </script>
+  <script id="template-author-link" type="text/x-handlebars-template">
+    <a href="#author-{{ id }}">{{ title }}</a>
+  </script>
+  <script id="template-tag-cloud-link" type="text/x-handlebars-template">
+    {{#each tags}}
+      <li><a href="#tag-{{ tag }}" class="tag-size-{{className}}">{{ tag }}</a></li>
+    {{/each}}
+  </script>
+  <script id="template-author-cloud-link" type="text/x-handlebars-template">
+    {{#each authors}}
+      <li>
+        <a href="#author-{{ id }}">{{ author }}</a>
+        <span>({{ counter }})</span>
+      </li>
+    {{/each}}
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.1.0/handlebars.min.js"></script>
   <script src="js/script.js"></script>
 </body>
 

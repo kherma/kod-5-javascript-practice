@@ -1,4 +1,23 @@
 'use strict';
+
+const templates = {
+  articleLink: Handlebars.compile(
+    document.querySelector('#template-article-link').innerHTML
+  ),
+  tagLink: Handlebars.compile(
+    document.querySelector('#template-tag-link').innerHTML
+  ),
+  authorLink: Handlebars.compile(
+    document.querySelector('#template-author-link').innerHTML
+  ),
+  tagCloudLink: Handlebars.compile(
+    document.querySelector('#template-tag-cloud-link').innerHTML
+  ),
+  authorCloudLink: Handlebars.compile(
+    document.querySelector('#template-author-cloud-link').innerHTML
+  ),
+};
+
 const removeActiveClass = (query) => {
   const activeLinks = document.querySelectorAll(query);
   for (let activeLink of activeLinks) {
@@ -66,6 +85,7 @@ function generateTitleLinks(customSelector = '') {
   const articles = document.querySelectorAll(
     select.all.articles + customSelector
   );
+  let html = '';
   for (let article of articles) {
     /* get the article id */
     const articleId = article.getAttribute('id');
@@ -74,20 +94,16 @@ function generateTitleLinks(customSelector = '') {
     const articleTitle = article.querySelector(select.article.title).innerHTML;
 
     /* create HTML of the link */
-    const newLi = document.createElement('li');
-    const newA = document.createElement('a');
-    const newSpan = document.createElement('span');
-
-    article.classList.contains('active') && newA.classList.add('active');
-    newA.href = `#${articleId}`;
-    newSpan.innerText = articleTitle;
-
-    newA.appendChild(newSpan);
-    newLi.appendChild(newA);
-
-    /* insert link into titleList */
-    titleList.appendChild(newLi);
+    const linkHTMLData = {
+      id: articleId,
+      title: articleTitle,
+      ...(article.classList.contains('active') && { className: 'active' }),
+    };
+    const linkHTML = templates.articleLink(linkHTMLData);
+    html += linkHTML;
   }
+
+  titleList.insertAdjacentHTML('beforeend', html);
 
   const links = document.querySelectorAll('.titles a');
 
@@ -135,18 +151,6 @@ const calculateTagClass = (tagCount, tagsParams) => {
   return tagPercentageToClassValue;
 };
 
-const createTagListElement = (tag, tagCounterClass) => {
-  const newA = document.createElement('a');
-  const newLi = document.createElement('li');
-  newA.innerText = tag;
-  newA.href = `#tag-${tag}`;
-  newLi.appendChild(newA);
-  tagCounterClass &&
-    newA.classList.add(`${opts.tagSizes.classPrefix}${tagCounterClass}`);
-
-  return newLi;
-};
-
 function generateTags() {
   const allTags = {};
 
@@ -162,26 +166,34 @@ function generateTags() {
     /* get tags from data-tags attribute */
     const articleTags = article.dataset.tags.split(' ');
 
+    let html = '';
     /* START LOOP: for each tag */
     articleTags.forEach((tag) => {
       /* generate HTML of the link */
-      articleTagsWrapper.appendChild(createTagListElement(tag));
+      const tagHTMLData = {
+        id: `tag-${tag}`,
+        title: tag,
+      };
+      const tagHTML = templates.tagLink(tagHTMLData);
+      html += tagHTML;
+
       !allTags[tag] ? (allTags[tag] = 1) : allTags[tag]++;
       /* END LOOP: for each tag */
     });
+    articleTagsWrapper.insertAdjacentHTML('beforeend', html);
     /* END LOOP: for every article: */
   }
 
-  const tagsParams = calculateTagsParams(allTags);
+  const allTagsData = { tags: [] };
 
-  Object.entries(allTags).forEach((keyValue) =>
-    tagsList.appendChild(
-      createTagListElement(
-        keyValue[0],
-        calculateTagClass(keyValue[1], tagsParams)
-      )
-    )
-  );
+  const tagsParams = calculateTagsParams(allTags);
+  Object.entries(allTags).forEach((keyValue) => {
+    allTagsData.tags.push({
+      tag: keyValue[0],
+      className: calculateTagClass(keyValue[1], tagsParams),
+    });
+  });
+  tagsList.insertAdjacentHTML('beforeend', templates.tagCloudLink(allTagsData));
 }
 
 generateTags();
@@ -235,45 +247,38 @@ function addClickListenersToTags() {
 
 addClickListenersToTags();
 
-const createAuthorElement = (author, authorArticleCount) => {
-  const newA = document.createElement('a');
-  newA.innerText = author;
-  newA.href = `#author-${author.toLowerCase().replace(' ', '-')}`;
-
-  if (authorArticleCount) {
-    const newSpan = document.createElement('span');
-    newSpan.classList.add('author-name');
-    newSpan.innerText = `(${authorArticleCount})`;
-
-    const newLi = document.createElement('li');
-    newLi.appendChild(newA);
-    newLi.appendChild(newSpan);
-    return newLi;
-  }
-
-  return newA;
-};
-
 function generateAuthors() {
   const allAuthors = {};
   const AuthorsList = document.querySelector(select.listOf.authors);
 
   const articles = document.querySelectorAll(select.all.articles);
+
   for (let article of articles) {
     const postAuthorWrapper = article.querySelector(select.article.author);
     const postAuthor = article.dataset.author;
     !allAuthors[postAuthor]
       ? (allAuthors[postAuthor] = 1)
       : allAuthors[postAuthor]++;
-    const newA = document.createElement('a');
-    newA.innerText = postAuthor;
-    newA.href = `#author-${postAuthor.toLowerCase().replace(' ', '-')}`;
-    postAuthorWrapper.appendChild(createAuthorElement(postAuthor));
-  }
 
+    const authorHTMLData = {
+      id: postAuthor.toLowerCase().replace(' ', '-'),
+      title: postAuthor,
+    };
+    const authorHTML = templates.authorLink(authorHTMLData);
+    postAuthorWrapper.insertAdjacentHTML('beforeend', authorHTML);
+  }
+  const allAuthorsData = { authors: [] };
   Object.entries(allAuthors).forEach((keyValue) => {
-    AuthorsList.appendChild(createAuthorElement(keyValue[0], keyValue[1]));
+    allAuthorsData.authors.push({
+      id: keyValue[0].toLowerCase().replace(' ', '-'),
+      author: keyValue[0],
+      counter: keyValue[1],
+    });
   });
+  AuthorsList.insertAdjacentHTML(
+    'beforeend',
+    templates.authorCloudLink(allAuthorsData)
+  );
 }
 
 generateAuthors();
